@@ -8,7 +8,19 @@ def client_program():
         client_socket = socket.socket()  
         client_socket.connect((host, port)) 
 
-        client_socket.send("hello from client".encode())
+        # send userid and password to register to server
+        id = input("Enter your userid to register: ")
+        password = input("Enter your password to registred: ")
+        credentials = id+"_"+password
+        client_socket.send(credentials.encode())
+        response = client_socket.recv(1024).decode()
+        print(response)
+
+        #send userid and password to login to server
+        id = input("Enter your userid to login: ")
+        password = input("Enter your password to login: ")
+        credentials = id+"_"+password
+        client_socket.send(credentials.encode())
         response = client_socket.recv(1024).decode()
         print(response)
 
