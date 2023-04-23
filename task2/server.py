@@ -2,6 +2,7 @@ import socket
 
 Users = {}
 ActiveUsers = {}
+UsersInChatRooms = {}
 
 def showActiveUsers(ActiveUsers):
     print("----Active Users-----")
@@ -38,6 +39,9 @@ def server_program():
 
     print("Connection from: ", str(address))
 
+    id = ""
+    password = ""
+    
     # receive userid and password from client to register
     msg = conn.recv(1024).decode()
     registerUser(msg)
@@ -46,9 +50,34 @@ def server_program():
     # receive userid and password from client to login
     msg = conn.recv(1024).decode()
     if login(msg):
+        id = msg.split("_")[0]
+        password = msg.split("_")[1]
         conn.send("Login Successful".encode())
     else : 
         conn.send("Wrong Credentials".encode())
+
+    # receive room id to join or create
+    msg = conn.recv(1024).decode()
+    verb = msg.split("_")[0]
+    roomID = msg.split("_")[1]
+    if verb == "join":
+        if roomID in UsersInChatRooms:
+            UsersInChatRooms[roomID].append(id)
+            msg = "Joined Chat Room "+roomID+" Successfully"
+            conn.send(msg.encode())
+
+        else:
+            msg = "Chat Room "+roomID+" does not exist"
+            conn.send(msg.encode())
+    
+    elif verb == "create":
+        if roomID not in UsersInChatRooms:
+            UsersInChatRooms[roomID] = []
+            msg = "Chat Room "+roomID+" Created Successfully"
+            conn.send(msg.encode())
+        else:
+            msg = "Chat Room "+roomID+" already exist"
+            conn.send(msg.encode())
 
     conn.close() 
 
