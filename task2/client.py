@@ -30,20 +30,25 @@ def client_program():
                 print("3. Logout")
                 choice = input("Enter your choice: ")
                 if choice == "1":
-                       roomID = input("Enter Chat Room ID to join: ")
-                       msg = "join_"+roomID
-                       client_socket.send(msg.encode())
-                       response = client_socket.recv(1024).decode()
-                       print(response)
+                        roomID = input("Enter Chat Room ID to join: ")
+                        msg = "join_"+roomID
+                        client_socket.send(msg.encode())
+                        response = client_socket.recv(1024).decode()
+                        print(response)
+                       
+                        if(response == "Joined Chat Room "+roomID+" Successfully"):
+                                roomActiveUsers = client_socket.recv(1024).decode()
+                                print("----Active Users in Chat Room "+roomID+"------")
+                                print(roomActiveUsers)
+                                print("-------------------------------------------------")
 
-                       showActiveUsersInChatRoom(roomID)
 
                 elif choice == "2":
-                       roomID = input("Enter Chat Room ID to create: ")
-                       msg = "create_"+roomID
-                       client_socket.send(msg.encode())
-                       response = client_socket.recv(1024).decode()
-                       print(response)
+                        roomID = input("Enter Chat Room ID to create: ")
+                        msg = "create_"+roomID
+                        client_socket.send(msg.encode())
+                        response = client_socket.recv(1024).decode()
+                        print(response)
                 elif choice == "3":
                         print("Logout Successful")
 

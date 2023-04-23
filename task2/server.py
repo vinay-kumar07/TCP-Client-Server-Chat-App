@@ -1,4 +1,5 @@
 import socket
+import threading
 
 Users = {}
 ActiveUsers = {}
@@ -27,23 +28,12 @@ def login(msg):
     else:
         return 0
 
-def server_program():
-    host = socket.gethostname()
-    port = 12344 
-
-    server_socket = socket.socket()
-    server_socket.bind((host, port))
-
-    server_socket.listen(2)
-    conn, address = server_socket.accept()
-
-    print("Connection from: ", str(address))
-
+def handle_connection(conn, address):
     id = ""
-    password = ""
-    
+
     # receive userid and password from client to register
     msg = conn.recv(1024).decode()
+    print(msg)
     registerUser(msg)
     conn.send("User Registered Successfully, Now you can Login".encode())
 
@@ -51,7 +41,6 @@ def server_program():
     msg = conn.recv(1024).decode()
     if login(msg):
         id = msg.split("_")[0]
-        password = msg.split("_")[1]
         conn.send("Login Successful".encode())
     else : 
         conn.send("Wrong Credentials".encode())
@@ -65,6 +54,13 @@ def server_program():
             UsersInChatRooms[roomID].append(id)
             msg = "Joined Chat Room "+roomID+" Successfully"
             conn.send(msg.encode())
+            
+            #send active users in chat room
+            msg = ""
+            for user in UsersInChatRooms[roomID]:
+                msg += user+"_"
+            msg = msg[:-1]
+            conn.send(msg.encode())
 
         else:
             msg = "Chat Room "+roomID+" does not exist"
@@ -75,11 +71,28 @@ def server_program():
             UsersInChatRooms[roomID] = []
             msg = "Chat Room "+roomID+" Created Successfully"
             conn.send(msg.encode())
+
         else:
             msg = "Chat Room "+roomID+" already exist"
             conn.send(msg.encode())
 
-    conn.close() 
+    conn.close()
+
+def server_program():
+    host = socket.gethostname()
+    port = 12344 
+
+    server_socket = socket.socket()
+    server_socket.bind((host, port))
+
+    server_socket.listen(2)
+    while True:
+        conn, address = server_socket.accept()
+        print("Connection from: ", str(address))
+
+        thread = threading.Thread(target=handle_connection, args=(conn, address))
+        thread.daemon = True
+        thread.start()
 
 
 if __name__ == '__main__':
