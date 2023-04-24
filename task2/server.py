@@ -56,12 +56,12 @@ def chat(id,roomID,client_socket):
             return
         message = id+": "+message
         for activeClientsInChatRoom in AddressInChatRooms[roomID]:
-            # if activeClientsInChatRoom!=client_socket:
-            #wait for the server to send the complete message
-            SEND(message,activeClientsInChatRoom)
-            time.sleep(0.5)
+            if activeClientsInChatRoom!=client_socket:
+                SEND(message,activeClientsInChatRoom)
+                time.sleep(0.1)
                 # activeClientsInChatRoom.send(message.encode())
-        # client_socket.send("Sent".encode())
+        SEND("Sent",client_socket)
+        time.sleep(0.1)
 
 # function to join chat room
 def joinRoom(id,roomID,client_socket):
@@ -70,7 +70,7 @@ def joinRoom(id,roomID,client_socket):
         AddressInChatRooms[roomID].append(client_socket)
         # client_socket.send("1".encode())
         SEND("1",client_socket)
-        time.sleep(1)
+        time.sleep(0.2)
         #send active users in chat room
         actusr = ""
         for x in UsersInChatRooms[roomID]:
@@ -79,6 +79,7 @@ def joinRoom(id,roomID,client_socket):
         print(actusr)
         # client_socket.send(actusr.encode())
         SEND(actusr,client_socket)
+        time.sleep(0.2)
         print(client_socket.recv(1024).decode())
 
         chat(id,roomID,client_socket)
@@ -158,10 +159,10 @@ def server_program():
         client_socket, client_address = server_socket.accept()
         print("Connection from: ", str(client_address))
 
-        handle_connection(client_socket,client_address)
-        # thread = threading.Thread(target=handle_connection, args=(client_socket,client_address))
-        # thread.daemon = True
-        # thread.start()
+        # handle_connection(client_socket,client_address)
+        thread = threading.Thread(target=handle_connection, args=(client_socket,client_address))
+        thread.daemon = True
+        thread.start()
 
 
 if __name__ == '__main__':
