@@ -2,8 +2,8 @@ import socket
 import time
 import os
 
-def SEND(data,client_socket):
-    total_sent = 0
+def SEND(data,client_socket):  
+    total_sent = 0 
     while total_sent < len(data):
         sent = client_socket.send(data[total_sent:].encode())
         if sent == 0:
@@ -18,7 +18,6 @@ def chat(id,client_socket):
                 message = input(id+": ")
                 SEND(message,client_socket)
                 time.sleep(0.5)
-                # client_socket.send(message.encode())
                 if message == "exit":
                         print(client_socket.recv(1024).decode())
                         return
@@ -30,40 +29,40 @@ def chat(id,client_socket):
                         print(x)
 
 def chatRoomOptions(id,client_socket):
-        print("1. Join a chat room")
-        print("2. Create a chat room")
-        print("3. Logout")
-        choice = input("Enter your choice: ")
-        if choice == "1":
-                roomID = input("Enter Chat Room ID to join: ")
-                msg = "join_"+roomID
-                SEND(msg,client_socket)
-                # client_socket.send(msg.encode())
-                response = client_socket.recv(1024).decode()
-                print(response)
-                if(response == "1"):
-                        print("Joined Chat Room")
-                        print("----Active Users in Chat Room "+roomID+"------")
-                        print(client_socket.recv(1024).decode())
-                        print("-------------------------------------------------")
-                        SEND("Received",client_socket)
-                        # client_socket.send("Received".encode())
-                        chat(id,client_socket)
+        while True:
+                print("1. Join a chat room")
+                print("2. Create a chat room")
+                print("3. Logout")
+                choice = input("Enter your choice: ")
 
-        elif choice == "2":
-                roomID = input("Enter Chat Room ID to create: ")
-                msg = "create_"+roomID
-                SEND(msg,client_socket)
-                # client_socket.send(msg.encode())
-                response = client_socket.recv(1024).decode()
-                print(response)
+                if choice == "1":
+                        roomID = input("Enter Chat Room ID to join: ")
+                        msg = "join_"+roomID
+                        SEND(msg,client_socket)
+                        response = client_socket.recv(1024).decode()
+                        if(response == "1"):
+                                print("Joined Chat Room")
+                                print("----Active Users in Chat Room "+roomID+"---")
+                                print(client_socket.recv(1024).decode())
+                                print("-------------------------------------------")
+                                SEND("Received",client_socket)
+                                chat(id,client_socket)
+                        else:
+                                print(response)
 
-        elif choice == "3":
-                msg = "logout"
-                SEND(msg,client_socket)
-                # client_socket.send(msg.encode())
-                response = client_socket.recv(1024).decode()
-                print(response)
+                elif choice == "2":
+                        roomID = input("Enter Chat Room ID to create: ")
+                        msg = "create_"+roomID
+                        SEND(msg,client_socket)
+                        response = client_socket.recv(1024).decode()
+                        print(response)
+
+                elif choice == "3":
+                        msg = "logout"
+                        SEND(msg,client_socket)
+                        response = client_socket.recv(1024).decode()
+                        print(response)
+                        break
 
 def client_program():
 
@@ -81,7 +80,6 @@ def client_program():
                         password = input("Enter your password to registred: ")
                         credentials = "register_"+id+"_"+password
                         SEND(credentials,client_socket)
-                        # client_socket.send(credentials.encode())
                         response = client_socket.recv(1024).decode()
                         print(response)
 
@@ -91,10 +89,12 @@ def client_program():
                         password = input("Enter your password to login: ")
                         credentials = "login_"+id+"_"+password
                         SEND(credentials,client_socket)
-                        # client_socket.send(credentials.encode())
                         response = client_socket.recv(1024).decode()
                         print(response)
                         if response == "Login Successful":
+                                print("----Active Users-----")
+                                print(client_socket.recv(1024).decode())
+                                print("---------------------")
                                 chatRoomOptions(id,client_socket)
                         else:
                                 client_socket.close() 
