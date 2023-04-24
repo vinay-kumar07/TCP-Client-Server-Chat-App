@@ -6,6 +6,7 @@ Users = {}
 ActiveUsers = {}
 UsersInChatRooms = {}
 AddressInChatRooms = {}
+Conversations = {}
 
 # function to show active users
 def showActiveUsers(ActiveUsers):
@@ -55,13 +56,16 @@ def chat(id,roomID,client_socket):
             # client_socket.send("Leaved Room Successfully".encode())
             return
         message = id+": "+message
-        for activeClientsInChatRoom in AddressInChatRooms[roomID]:
-            if activeClientsInChatRoom!=client_socket:
-                SEND(message,activeClientsInChatRoom)
-                time.sleep(0.1)
-                # activeClientsInChatRoom.send(message.encode())
-        SEND("Sent",client_socket)
-        time.sleep(0.1)
+        Conversations[roomID].append(message)
+        convo = ','.join(Conversations[roomID])
+        SEND(convo,client_socket)
+        # for activeClientsInChatRoom in AddressInChatRooms[roomID]:
+        #     if activeClientsInChatRoom!=client_socket:
+        #         SEND(Conversations[roomID].tostring(),activeClientsInChatRoom)
+        #         time.sleep(0.1)
+        #         # activeClientsInChatRoom.send(message.encode())
+        # SEND("Sent",client_socket)
+        time.sleep(0.5)
 
 # function to join chat room
 def joinRoom(id,roomID,client_socket):
@@ -96,6 +100,7 @@ def createRoom(id,roomID,client_socket):
     if roomID not in UsersInChatRooms:
         UsersInChatRooms[roomID] = []
         AddressInChatRooms[roomID] = []
+        Conversations[roomID] = []
         msg = "Chat Room "+roomID+" Created Successfully"
         # client_socket.send(msg.encode())
         SEND(msg,client_socket)

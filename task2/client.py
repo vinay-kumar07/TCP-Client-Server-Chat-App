@@ -1,5 +1,6 @@
 import socket
 import time
+import os
 
 def SEND(data,client_socket):
     total_sent = 0
@@ -11,8 +12,9 @@ def SEND(data,client_socket):
 
 def chat(id,client_socket):
         #send message to chat room
-        print("Now you can start messaging.Type 'exit' to exit from chat room")
+        print("Now you can start messaging.")
         while True:
+                print("Type 'exit' to exit from chat room")
                 message = input(id+": ")
                 SEND(message,client_socket)
                 time.sleep(0.5)
@@ -20,7 +22,12 @@ def chat(id,client_socket):
                 if message == "exit":
                         print(client_socket.recv(1024).decode())
                         return
-                print(client_socket.recv(1024).decode())
+                
+                conversation = client_socket.recv(1024).decode()
+                convo  = conversation.split(",")
+                os.system('clear')
+                for x in convo:
+                        print(x)
 
 def chatRoomOptions(id,client_socket):
         print("1. Join a chat room")
