@@ -43,7 +43,8 @@ def chat(roomID,client_socket):
         if message == "exit":
             UsersInChatRooms[roomID].remove(id)
             AddressInChatRooms[roomID].remove(client_socket)
-            break
+            client_socket.send("Leaved Room Successfully".encode())
+            return
         # for activeClientsInChatRoom in AddressInChatRooms[roomID]:
         #     if activeClientsInChatRoom!=client_socket:
         #         activeClientsInChatRoom.send(message.encode())
@@ -54,21 +55,23 @@ def joinRoom(id,roomID,client_socket):
     if roomID in UsersInChatRooms:
         UsersInChatRooms[roomID].append(id)
         AddressInChatRooms[roomID].append(client_socket)
-        msg = "Joined Chat Room "+roomID+" Successfully"
-        client_socket.send(msg.encode())
-       
-        #send active users in chat room
-        msg = ""
-        for x in UsersInChatRooms[roomID]:
-            msg = msg + x + ","
-        msg = msg[:-1]
-        client_socket.send(msg.encode())
+        client_socket.send("1".encode())
 
-        chat(roomID,client_socket)
+        #send active users in chat room
+        actusr = ""
+        for x in UsersInChatRooms[roomID]:
+            actusr = actusr + x + ","
+        actusr = actusr[:-1]
+        print(actusr)
+        client_socket.send(actusr.encode())
+        print(client_socket.recv(1024).decode())
+
+        # chat(roomID,client_socket)
   
     else:
         msg = "Chat Room "+roomID+" does not exist"
         client_socket.send(msg.encode())
+        return
     
 
 # function to create chat room
@@ -87,13 +90,15 @@ def createRoom(id,roomID,client_socket):
 def roomActions(client_socket,id):
     # receive room id to join or create
     msg = client_socket.recv(1024).decode()
+    if msg == "logout":
+        client_socket.send("Logged Out Successfully".encode())
+        return
     verb = msg.split("_")[0]
     roomID = msg.split("_")[1]
     if verb == "join":
         joinRoom(id,roomID,client_socket)
     elif verb == "create":
         createRoom(id,roomID,client_socket)
-        joinRoom(id,roomID,client_socket)
 
 # function to handle connection
 def handle_connection(client_socket,client_address):
@@ -106,15 +111,14 @@ def handle_connection(client_socket,client_address):
             client_socket.send("User Registered Successfully, Now you can Login".encode())
         elif msg.split("_")[0] == "login":
             if login(msg):
-                id = msg.split("_")[0]
+                id = msg.split("_")[1]
                 client_socket.send("Login Successful".encode())
                 roomActions(client_socket,id)
                 ActiveUsers.pop(id)
-                break
             else : 
                 client_socket.send("Wrong Credentials".encode())
                 client_socket.close()
-                break
+            break
 
     client_socket.close()
 
@@ -131,9 +135,10 @@ def server_program():
         client_socket, client_address = server_socket.accept()
         print("Connection from: ", str(client_address))
 
-        thread = threading.Thread(target=handle_connection, args=(client_socket,client_address))
-        thread.daemon = True
-        thread.start()
+        handle_connection(client_socket,client_address)
+        # thread = threading.Thread(target=handle_connection, args=(client_socket,client_address))
+        # thread.daemon = True
+        # thread.start()
 
 
 if __name__ == '__main__':
