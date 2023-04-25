@@ -34,6 +34,7 @@ int main(int argc, char const* argv[])
 		return -1;
 	}
 
+	printf("Enter quit to exit\n");
     while(1){
 		printf("Enter Postfix Expression: ");
 		char exp[1024] = {0};

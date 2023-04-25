@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <ctype.h>
+#include <time.h>
 #define PORT 8080
 
 struct Stack {
@@ -101,34 +102,42 @@ char* handleRequest(char* exp){
     return r;
 }
 
-void handle_connection(int arg){
+void *handle_connection(void *arg){
     
-    // int socketId = *((int *)arg);  
-    int socketId = arg;
+    int socketId = *((int *)arg);  
+    // int socketId = arg;
     //read request
     while(1){
+
+        clock_t start_time, end_time;
+        double cpu_time_used;
+        
+        start_time = clock();
         char buffer[1024] = { 0 };
         int valread = read(socketId, buffer, 1024);
         printf("%s\n", buffer);
-
         if(!strcmp(buffer,"quit")){
             close(socketId);
-            return;
-            // return NULL;
+            // return;
+            return NULL;
         }
-        
-        // pthread_mutex_t lock;
-        // pthread_mutex_init(&lock, NULL);
-        // pthread_mutex_lock(&lock);
-        // FILE *fp;
-        // fp = fopen("server_records.txt","a");
-        // fprintf(fp,"Request By Client ID: %d ,",socketId);
-        // fclose(fp);
-        // pthread_mutex_unlock(&lock);
 
         char* response = handleRequest(buffer);
         printf("%s\n", response);
         send(socketId, response, strlen(response), 0);
+
+        end_time = clock();
+        cpu_time_used = ((double) (end_time - start_time)) / CLOCKS_PER_SEC;
+        
+        pthread_mutex_t lock;
+        pthread_mutex_init(&lock, NULL);
+        pthread_mutex_lock(&lock);
+        FILE *fp;
+        fp = fopen("server_records.txt","a");
+        fprintf(fp,"Request By Client ID: %d , Query: %s, Response: %s, Time Elapsed: %f\n",socketId,buffer,response,cpu_time_used);
+        fclose(fp);
+        pthread_mutex_unlock(&lock);
+
     }
 }
 
@@ -176,12 +185,10 @@ int main(int argc, char const* argv[])
             exit(EXIT_FAILURE);
         }
 
-        handle_connection(new_socket);
+        // handle_connection(new_socket);
 
-        // int valread = send(new_socket, "ack", strlen("ack"), 0);
-
-        // pthread_t client_threadid;
-        // pthread_create(&client_threadid,NULL,handle_connection,&new_socket);
+        pthread_t client_threadid;
+        pthread_create(&client_threadid,NULL,handle_connection,&new_socket);
     }
 
     // closing the listening socket
