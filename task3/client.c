@@ -9,7 +9,6 @@ int main(int argc, char const* argv[])
 {
 	int sock = 0, valread, client_fd;
 	struct sockaddr_in serv_addr;
-	char buffer[1024] = { 0 };
 	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		printf("\n Socket creation error \n");
 		return -1;
@@ -36,16 +35,17 @@ int main(int argc, char const* argv[])
 	}
 
     while(1){
-		char exp[1024] = {0};
 		printf("Enter Postfix Expression: ");
-		scanf("%[^\n]s",exp);
+		char exp[1024] = {0};
+		scanf("%[^\n]%*c",exp);
 		
         send(sock, exp, strlen(exp), 0);
         if(!strcmp(exp,"quit")){
             close(client_fd);
             break;
         }
-		
+
+		char buffer[1024] = { 0 };
         valread = read(sock, buffer, 1024);
         printf("%s\n", buffer);
     }
