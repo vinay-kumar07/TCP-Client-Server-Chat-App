@@ -5,11 +5,100 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <ctype.h>
 #define PORT 8080
 
+struct Stack {
+    int top;
+    int capacity;
+    float* array;
+};
 
-char* handleRequest(char* buffer){
-    return "received";
+struct Stack* createStack(int capacity)
+{
+    struct Stack* stack = (struct Stack*)malloc(sizeof(struct Stack));
+ 
+    if (!stack)
+        return NULL;
+ 
+    stack->top = -1;
+    stack->capacity = capacity;
+    stack->array = (float*)malloc(stack->capacity * sizeof(float));
+ 
+    if (!stack->array)
+        return NULL;
+ 
+    return stack;
+}
+
+
+int isEmpty(struct Stack* stack)
+{
+    return stack->top == -1;
+}
+ 
+float pop(struct Stack* stack)
+{
+    if (!isEmpty(stack))
+        return stack->array[stack->top--];
+    return -1.0;
+}
+ 
+void push(struct Stack* stack, float op)
+{
+    stack->array[++stack->top] = op;
+}
+
+float eval_float(char* str) {
+    float value = atof(str);
+    return value;
+}
+
+void float_to_string(float value, char* response, int precision) {
+    sprintf(response, "%.*f", precision, value);
+}
+
+char* handleRequest(char* exp){
+    struct Stack* stack = createStack(strlen(exp));
+ 
+    if (!stack)
+        return "-1";
+
+    char* token = strtok(exp," ");
+    while(token != NULL){
+
+        if(!strcmp(token,"0"))
+            push(stack, eval_float(token));
+        else if(eval_float(token) != 0.000000)
+            push(stack, eval_float(token));
+
+        else {
+            float val1 = pop(stack);
+            float val2 = pop(stack);
+            if(!strcmp(token,"+")){
+                push(stack, val2 + val1);
+            }
+            else if(!strcmp(token,"-")){
+                push(stack, val2 - val1);
+            }
+            else if(!strcmp(token,"*")){
+                push(stack, val2 * val1);
+            }
+            else if(!strcmp(token,"/")){
+                push(stack, val2 / val1);
+            }
+            else{
+                printf("Invalid Expression\n");
+                break;
+            }
+        }
+
+        token = strtok(NULL," ");
+    }
+
+    char* response = (char*)malloc(1024*sizeof(char));
+    float_to_string(pop(stack), response, 6);
+    return response;
 }
 
 void *handle_connection(void *arg){

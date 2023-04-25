@@ -36,12 +36,12 @@ int main(int argc, char const* argv[])
 	}
 
     while(1){
-        printf("Enter Postfix Expression: ");
-        char type[1024] = {0};
-        scanf("%s",type);
-
-        send(sock, type, strlen(type), 0);
-        if(!strcmp(type,"quit")){
+		char exp[1024] = {0};
+		printf("Enter Postfix Expression: ");
+		scanf("%[^\n]s",exp);
+		
+        send(sock, exp, strlen(exp), 0);
+        if(!strcmp(exp,"quit")){
             close(client_fd);
             break;
         }
