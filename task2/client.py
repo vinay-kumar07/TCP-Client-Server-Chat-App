@@ -10,6 +10,7 @@ def SEND(data,client_socket):                                                   
             raise RuntimeError("Socket connection broken")                      #Raise error
         total_sent += sent                                                      #Increment total data sent
 
+
 def chat(id,client_socket):                                                     #Function to chat with other users
         print("Now you can start messaging.")   
         while True:                                                             #Loop to send and receive messages
@@ -25,6 +26,7 @@ def chat(id,client_socket):                                                     
                 os.system('clear')                                              #Clear screen
                 for x in convo:                                                 #Loop to print messages
                         print(x)        
+
 
 def chatRoomOptions(id,client_socket):                                          #Function to show chat room options
         while True:                                                             #Loop to show chat room options
